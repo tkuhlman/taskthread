@@ -35,7 +35,7 @@ class TaskThread(threading.Thread):
                 return
             with self.running_lock:
                 self.start_task_event.clear()
-            self.task(*self.args, *self.kwargs)
+            self.task(*self.args, **self.kwargs)
             with self.running_lock:
                 self.in_task = False
 
