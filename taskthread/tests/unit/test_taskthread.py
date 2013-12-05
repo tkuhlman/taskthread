@@ -8,6 +8,8 @@ from mock import Mock
 from taskthread import TaskThread, TaskInProcessException
 
 forever_event = threading.Event()
+
+
 def forever_function(*args, **kwargs):
     forever_event.wait()
     forever_event.clear()
@@ -17,7 +19,6 @@ class TaskThreadTestCase(unittest.TestCase):
     """
     Tests for :py:class:`.TaskThread`.
     """
-
 
     def test___init__(self):
         """
@@ -50,7 +51,7 @@ class TaskThreadTestCase(unittest.TestCase):
                                  event=event)
 
         task_thread.args = [task_thread]
-        task_thread.kwargs = {'a':2}
+        task_thread.kwargs = {'a': 2}
         task_thread.in_task = True
         task_thread.run()
         self.assertEqual(False, task_thread.in_task)
@@ -96,4 +97,3 @@ class TaskThreadTestCase(unittest.TestCase):
                 pass
         forever_event.set()
         task_thread.join(1)
-

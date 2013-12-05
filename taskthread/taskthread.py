@@ -21,7 +21,7 @@ class TaskThread(threading.Thread):
     def __init__(self, task, event=threading.Event()):
         super(TaskThread, self).__init__()
         self.task = task
-        self.task_event= event
+        self.task_event = event
         self.running = True
         self.running_lock = threading.Lock()
         self.in_task = False
