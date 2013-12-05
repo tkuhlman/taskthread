@@ -35,6 +35,11 @@ Links
 Changes
 -------
 
+v1.2
+~~~~
+
+* Refactor the module so classes are defined in __init__.py.
+
 
 v1.1
 ~~~~
