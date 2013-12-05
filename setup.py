@@ -12,7 +12,7 @@ setup(
     author_email='john.herndon@hp.com',
     description='Simple thread module to repetitively perform a task on a single thread',
     long_description=open('README.rst').read(),
-    packages=find_packages()
+    packages=find_packages(),
     install_requires=[
         'argparse',
         'logutils',

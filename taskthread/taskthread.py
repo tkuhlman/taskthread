@@ -18,23 +18,23 @@ class TaskThread(threading.Thread):
     '''
     Threads marked as daemon will be terminated.
     '''
-    def __init__(self, task):
+    def __init__(self, task, event=threading.Event()):
+        super(TaskThread, self).__init__()
         self.task = task
-        self.start_task_event = threading.Event()
+        self.task_event= event
         self.running = True
         self.running_lock = threading.Lock()
         self.in_task = False
-        self.args
 
     def run(self):
         """
         called by threading.Thread, this runs in the new thread.
         """
-        while self.start_task_event.wait():
+        while self.task_event.wait():
             if not self.running:
                 return
             with self.running_lock:
-                self.start_task_event.clear()
+                self.task_event.clear()
             self.task(*self.args, **self.kwargs)
             with self.running_lock:
                 self.in_task = False
@@ -59,12 +59,12 @@ class TaskThread(threading.Thread):
         self.args = args
         self.kwargs = kwargs
         # Wake up the thread to do it's thing
-        self.start_task_event.set()
+        self.task_event.set()
 
-    def join(self):
+    def join(self, timeout=None):
         """
         Wait for the task to finish
         """
         self.running = False
-        self.start_task_event.set()
-        super(TaskThread, self).join()
+        self.task_event.set()
+        super(TaskThread, self).join(timeout=timeout)
