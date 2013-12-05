@@ -1,6 +1,6 @@
 from setuptools import setup, find_packages
 
-import pyvertica
+import taskthread
 
 
 setup(
