@@ -75,12 +75,28 @@ class TaskThreadTestCase(unittest.TestCase):
         task_thread.in_task = True
         self.assertRaises(TaskInProcessException, task_thread.run_task)
 
+    def test_join_task(self):
+        task_thread = TaskThread(forever_function)
+        task_thread.in_task = True
+        task_thread.task_complete = Mock()
+        task_thread.task_complete.wait = Mock(side_effect=[True])
+        success = task_thread.join_task(1)
+        self.assertTrue(success)
+
+    def test_join_task_not_running(self):
+        task_thread = TaskThread(forever_function)
+        task_thread.task_complete = Mock()
+        task_thread.wait =\
+            Mock(side_effect=Exception("Should never be called"))
+        task_thread.join_task(1)
+
     def test_join(self):
         task_thread = TaskThread(forever_function)
         task_thread.start()
         task_thread.run_task()
         # Set the event so the task completes
         forever_event.set()
+        task_thread.join_task(1)
         task_thread.join(1)
 
     def test_execute_multiple_tasks(self):
@@ -89,11 +105,7 @@ class TaskThreadTestCase(unittest.TestCase):
         task_thread.run_task()
         # Set the event so the task completes
         forever_event.set()
-        while True:
-            try:
-                task_thread.run_task()
-                break
-            except TaskInProcessException:
-                pass
+        task_thread.join_task(1)
         forever_event.set()
+        task_thread.join_task(1)
         task_thread.join(1)

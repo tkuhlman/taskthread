@@ -6,47 +6,81 @@ class TaskInProcessException(BaseException):
 
 
 class TaskThread(threading.Thread):
-
     """
     A thread object that repeats a task.
 
-    :param task
+    Usage example::
+
+        from taskthread import TaskThread
+
+        import time
+
+        def my_task(*args, **kwargs):
+            print args, kwargs
+
+        task_thread = TaskThread(my_task)
+        task_thread.start()
+        for i in xrange(10):
+            task_thread.run_task()
+            task_thread.join_task()
+        task_thread.join()
+
+    .. note:: If :py:meth:`~TaskThread.run_task` is
+        invoked while run_task is in progress,
+        :py:class:`~.TaskInProcessException` will
+        be raised.
+
+    :param task:
         A ``function``. This param is the task to execute when
          run_task is called.
+    :param event:
+        A ``threading.Event``. This event will be set when run_task
+         is called. The default value is a new event, but may be
+         specified for testing purposes.
     """
+
     daemon = True
     '''
     Threads marked as daemon will be terminated.
     '''
-    def __init__(self, task, event=threading.Event()):
+    def __init__(self, task, event=threading.Event(),
+                 *args, **kwargs):
+        """
+
+        """
         super(TaskThread, self).__init__()
         self.task = task
         self.task_event = event
         self.running = True
         self.running_lock = threading.Lock()
         self.in_task = False
+        self.task_complete = threading.Event()
+        self.args = args
+        self.kwargs = kwargs
 
     def run(self):
         """
-        called by threading.Thread, this runs in the new thread.
+        Called by threading.Thread, this runs in the new thread.
         """
         while self.task_event.wait():
             if not self.running:
                 return
             with self.running_lock:
                 self.task_event.clear()
+            self.task_complete.clear()
             self.task(*self.args, **self.kwargs)
             with self.running_lock:
                 self.in_task = False
+            self.task_complete.set()
 
     def run_task(self, *args, **kwargs):
         """
-        run an instance of the task.
+        Run an instance of the task.
 
-        :param *args
+        :param args:
             The arguments to pass to the task.
 
-        :param **kwargs
+        :param kwargs:
             The keyword arguments to pass to the task.
         """
         # Don't allow this call if the thread is currently
@@ -60,6 +94,23 @@ class TaskThread(threading.Thread):
         self.kwargs = kwargs
         # Wake up the thread to do it's thing
         self.task_event.set()
+
+    def join_task(self, time_out):
+        """
+        Wait for the currently running task to complete.
+
+        :param time_out:
+            An ``int``. The amount of time to wait for the
+            task to finish.
+        """
+        with self.running_lock:
+            if not self.in_task:
+                return
+
+        success = self.task_complete.wait(time_out)
+        if success:
+            self.task_complete.clear()
+        return success
 
     def join(self, timeout=None):
         """

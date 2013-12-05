@@ -6,17 +6,23 @@
 Welcome to taskthread's documentation!
 ======================================
 
-Contents:
+*taskthread* provides a thread implementation that executes a repetitive
+task several times without the need to start up a new thread.
 
-.. toctree::
-   :maxdepth: 2
+Installation
+------------
 
+*taskthread* can be installed with pip, via ``pip install taskthread``.
 
+Usage
+-----
 
-Indices and tables
-==================
+TaskThread
+~~~~~~~~~~
+.. autoclass:: taskthread.TaskThread
+    :members:
 
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
+TaskInProcessException
+~~~~~~~~~~~~~~~~~~~~~~
+.. autoclass:: taskthread.TaskInProcessException
+    :members:
