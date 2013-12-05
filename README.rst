@@ -18,21 +18,34 @@ Provided Classes
     Exception that is thrown if a task is started on a thread that is
     already executing.
 
+
 Installation
 ------------
+
 *taskthread* may be installed by executing ``pip install taskthread``.
+
+
+Links
+-------------
+
+* `documentation <http://taskthread.readthedocs.org/en/latest/>`_ 
+* `source <http://github.com/hpcs-som/taskthread/>`_
+
 
 Changes
 -------
 
+
 v1.1
 ~~~~
+
 * Add ``TaskThread.join_task`` method that waits for the currently executing
   task to complete.
 
 
 v1.0
 ~~~~
+
 * First release
 
 
