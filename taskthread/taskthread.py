@@ -11,8 +11,10 @@
 # WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
 # License for the specific language governing permissions and limitations
 # under the License.
+import logging
 import threading
 
+logger = logging.getLogger(__name__)
 
 class TaskInProcessException(BaseException):
     pass
@@ -58,9 +60,6 @@ class TaskThread(threading.Thread):
     '''
     def __init__(self, task, event=threading.Event(),
                  *args, **kwargs):
-        """
-
-        """
         super(TaskThread, self).__init__()
         self.task = task
         self.task_event = event
@@ -77,7 +76,9 @@ class TaskThread(threading.Thread):
         """
         while self.task_event.wait():
             if not self.running:
+                logger.debug("TaskThread exiting")
                 return
+            logger.debug("TaskThread starting task")
             with self.running_lock:
                 self.task_event.clear()
             self.task_complete.clear()
@@ -102,7 +103,7 @@ class TaskThread(threading.Thread):
             if self.in_task:
                 raise TaskInProcessException()
             self.in_task = True
-
+        logger.debug("Waking up the thread")
         self.args = args
         self.kwargs = kwargs
         # Wake up the thread to do it's thing

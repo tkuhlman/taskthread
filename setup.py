@@ -4,7 +4,7 @@ import taskthread
 
 
 setup(
-    name='pyvertica',
+    name='taskthread',
     version=taskthread.__version__,
     url='http://hpcloud.com',
     license='Apache',
