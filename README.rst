@@ -25,6 +25,12 @@ Installation
 Changes
 -------
 
+v1.1
+~~~~
+* Add ``TaskThread.join_task`` method that waits for the currently executing
+  task to complete.
+
+
 v1.0
 ~~~~
 * First release
