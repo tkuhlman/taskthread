@@ -41,7 +41,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'taskthread'
-copyright = u'2013, John Herndon'
+copyright = u'2013, Hewlett-Packard Development Company'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -233,7 +233,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
   ('index', 'taskthread', u'taskthread Documentation',
-   u'John Herndon', 'taskthread', 'One line description of project.',
+   u'John Herndon', 'taskthread', 'Repetitive task on a thread.',
    'Miscellaneous'),
 ]
 
