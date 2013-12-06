@@ -26,3 +26,8 @@ TaskInProcessException
 ~~~~~~~~~~~~~~~~~~~~~~
 .. autoclass:: taskthread.TaskInProcessException
     :members:
+
+TimerThread
+~~~~~~~~~~~~~~~~~~~~~~
+.. autoclass:: taskthread.TimerTask
+    :members:
