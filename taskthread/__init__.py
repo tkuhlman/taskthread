@@ -14,7 +14,7 @@
 import logging
 import threading
 
-__version__ = '1.2'
+__version__ = '1.3'
 
 
 logger = logging.getLogger(__name__)

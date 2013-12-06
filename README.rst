@@ -35,6 +35,12 @@ Links
 Changes
 -------
 
+v1.3
+~~~~
+
+* Change task loop to support python 2.6
+
+
 v1.2
 ~~~~
 
