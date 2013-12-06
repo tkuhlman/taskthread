@@ -78,7 +78,8 @@ class TaskThread(threading.Thread):
         """
         Called by threading.Thread, this runs in the new thread.
         """
-        while self.task_event.wait():
+        while True:
+            self.task_event.wait()
             if not self.running:
                 logger.debug("TaskThread exiting")
                 return
