@@ -35,10 +35,16 @@ Links
 Changes
 -------
 
-v1.3
+v1.4
 ~~~~
 
 * **ADD** ``TimerTask`` class that runs a repetitive task on a taskthread.
+
+
+v1.3
+~~~~
+
+* Change task loop to support python 2.6.
 
 
 v1.2
@@ -50,7 +56,7 @@ v1.2
 v1.1
 ~~~~
 
-* Add ``TaskThread.join_task`` method that waits for the currently executing.
+* **ADD** ``TaskThread.join_task`` method that waits for the currently executing.
   task to complete.
 
 
