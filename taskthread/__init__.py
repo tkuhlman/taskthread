@@ -214,7 +214,7 @@ class TimerTask(object):
     def start(self):
         """
         Start the task. This starts a :py:class:`.~TaskThread`, and starts
-        running run_threshould_timer on the thread.
+        running run_threshold_timer on the thread.
 
         """
         if not self.thread:

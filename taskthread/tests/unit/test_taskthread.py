@@ -17,9 +17,9 @@
 import threading
 import unittest2 as unittest
 
-from mock import Mock
+from mock import Mock, patch
 
-from taskthread import TaskThread, TaskInProcessException
+from taskthread import TaskThread, TaskInProcessException, TimerTask
 
 forever_event = threading.Event()
 
@@ -123,3 +123,115 @@ class TaskThreadTestCase(unittest.TestCase):
         forever_event.set()
         task_thread.join_task(1)
         task_thread.join(1)
+
+
+def my_func():
+    pass
+
+
+class TimerTaskTestCase(unittest.TestCase):
+
+    def test___int__(self):
+
+        task = TimerTask(my_func,
+                         delay=100)
+        self.assertEqual(my_func, task.execute_fcn)
+        self.assertEqual(100, task.delay)
+        self.assertIsNone(task.count_fcn)
+        self.assertIsNone(task.threshold)
+
+    def test___int__raises(self):
+        self.assertRaises(ValueError, TimerTask.__init__,
+                          TimerTask(None),
+                          my_func(),
+                          count_fcn=Mock())
+
+        self.assertRaises(ValueError, TimerTask.__init__,
+                          TimerTask(None),
+                          my_func(),
+                          threshold=Mock())
+
+    @patch('taskthread.TaskThread')
+    def test_start(self, TaskThreadMock):
+        task = TimerTask(my_func)
+        thread = TaskThreadMock.return_value
+
+        task.start()
+        self.assertTrue(task.running)
+        self.assertEqual(thread, task.thread)
+        thread.start.assert_called_once_with()
+        thread.run_task.assert_called_once_with()
+
+    @patch('taskthread.TaskThread')
+    def test_start_restarts(self, TaskThreadMock):
+        task = TimerTask(my_func, threshold=1, count_fcn=Mock())
+        thread = TaskThreadMock.return_value
+        task.last_count = 1
+        task.thread = thread
+
+        task.start()
+        self.assertEqual(0, task.last_count)
+        self.assertEqual(0, thread.start.called)
+        thread.run_task.assert_called_once_with()
+
+    @patch('taskthread.TaskThread')
+    def test_stop(self, TaskThreadMock):
+        running_lock = Mock()
+        running_lock.__enter__ = Mock()
+        running_lock.__exit__ = Mock()
+        task = TimerTask(my_func)
+        task.thread = TaskThreadMock.return_value
+        task.running = True
+        task.event = Mock()
+
+        task.stop()
+
+        self.assertEqual(False, task.running)
+        self.assertEqual(1, task.event.set.called)
+        running_lock.__enter__.assert_called_once_with()
+        running_lock.__exit__.assert_called_once_with(None, None, None)
+        task.thread.join_task.assert_called_once_with(2)
+
+
+    @patch('taskthread.TaskThread')
+    def test_stop_not_running(self, TaskThreadMock):
+        task = TimerTask(my_func)
+        task.thread = TaskThreadMock.return_value
+        task.running = False
+        task.event = Mock()
+
+        task.stop()
+
+        self.assertEqual(False, task.running)
+        self.assertEqual(0, task.event.set.called)
+        self.assertEqual(0, task.thread.join_task.called)
+
+    @patch('taskthread.TaskThread')
+    def test_shutdown(self, TaskThreadMock):
+        task = TimerTask(my_func)
+        task.thread = TaskThreadMock.return_value
+        task.running = False
+
+        task.thread.join.assert_called_once_with(2)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
