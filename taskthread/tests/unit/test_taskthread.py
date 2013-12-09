@@ -183,6 +183,7 @@ class TimerTaskTestCase(unittest.TestCase):
         task.thread = TaskThreadMock.return_value
         task.running = True
         task.event = Mock()
+        task.running_lock = running_lock
 
         task.stop()
 
@@ -191,7 +192,6 @@ class TimerTaskTestCase(unittest.TestCase):
         running_lock.__enter__.assert_called_once_with()
         running_lock.__exit__.assert_called_once_with(None, None, None)
         task.thread.join_task.assert_called_once_with(2)
-
 
     @patch('taskthread.TaskThread')
     def test_stop_not_running(self, TaskThreadMock):
@@ -211,27 +211,105 @@ class TimerTaskTestCase(unittest.TestCase):
         task = TimerTask(my_func)
         task.thread = TaskThreadMock.return_value
         task.running = False
-
+        task.shutdown()
         task.thread.join.assert_called_once_with(2)
 
+    def test__exec_if_threshold_met(self):
+        self.called = False
 
+        def exec_fcn():
+            self.called = True
 
+        def count_fcn():
+            return 10
 
+        task = TimerTask(exec_fcn, count_fcn=count_fcn, threshold=1)
+        task.last_count = 9
+        task._exec_if_threshold_met()
+        self.assertTrue(self.called)
+        self.assertEqual(10, task.last_count)
 
+    def test__exec_if_threshold_met_not_met(self):
 
+        def exec_fcn():
+            raise Exception("This shouldn't happen!!")
 
+        def count_fcn():
+            return 10
 
+        task = TimerTask(exec_fcn, count_fcn=count_fcn, threshold=10)
+        task.last_count = 9
+        task._exec_if_threshold_met()
+        self.assertEqual(9, task.last_count)
 
+    def test__exec(self):
+        self.called = False
 
+        def exec_fcn():
+            self.called = True
 
+        task = TimerTask(exec_fcn)
+        task._exec()
+        self.assertTrue(self.called)
 
+    def test__exec_threshold(self):
+        self.called = False
 
+        def exec_fcn():
+            self.called = True
 
+        def count_fcn():
+            return 1
 
+        task = TimerTask(exec_fcn, count_fcn=count_fcn, threshold=1)
+        task._exec()
+        self.assertTrue(self.called)
 
+    @patch('threading.Event')
+    def test__wait(self, event_mock):
+        task = TimerTask(my_func)
+        event = event_mock.return_value
 
+        task._wait()
+        event.wait.assert_called_once_with(timeout=task.delay)
+        self.assertEqual(1, event.clear.called)
 
+    @patch('threading.RLock')
+    def test__exit_loop(self, mock_rlock):
+        task = TimerTask(my_func)
+        task.running = False
+        lock = mock_rlock.return_value
+        lock.__enter__ = Mock()
+        lock.__exit__ = Mock()
+        self.assertTrue(task._exit_loop())
+        self.assertEqual(1, lock.__enter__.called)
+        lock.__exit__.assert_called_once_with(None, None, None)
 
+    @patch('threading.RLock')
+    def test__exit_loop_running(self, mock_rlock):
+        lock = mock_rlock.return_value
+        lock.__enter__ = Mock()
+        lock.__exit__ = Mock()
+        task = TimerTask(my_func)
+        task.running = True
+        self.assertFalse(task._exit_loop())
+        self.assertEqual(1, lock.__enter__.called)
+        lock.__exit__.assert_called_once_with(None, None, None)
 
+    @patch('threading.RLock')
+    @patch('threading.Event')
+    def test__run_threshold_timer(self, event_mock, rlock_mock):
+        self.task = None
+        event = event_mock.return_value
+        lock = rlock_mock.return_value
+        lock.__enter__ = Mock()
+        lock.__exit__ = Mock()
 
+        def exec_fcn():
+            self.task.running = False
 
+        self.task = TimerTask(exec_fcn)
+        self.task._run_threshold_timer()
+
+        self.assertFalse(self.task.running)
+        self.assertEqual(2, event.wait.call_count)

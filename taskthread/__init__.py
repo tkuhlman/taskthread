@@ -203,7 +203,7 @@ class TimerTask(object):
         self.event = threading.Event()
         self.delay = delay
         self.thread = None
-        self.running_lock = threading.Lock()
+        self.running_lock = threading.RLock()
         if bool(threshold) != bool(count_fcn):
             raise ValueError("Must specify threshold "
                              "and count_fcn, or neither")
@@ -219,7 +219,7 @@ class TimerTask(object):
         """
         if not self.thread:
             logger.debug('Starting up the taskthread')
-            self.thread = TaskThread(self.run_threshold_timer)
+            self.thread = TaskThread(self._run_threshold_timer)
             self.thread.start()
 
         if self.threshold:
@@ -273,6 +273,9 @@ class TimerTask(object):
         logger.debug('Task woken up')
 
     def _exit_loop(self):
+        """
+        If self.running is false, it means the task should shut down.
+        """
         exit_loop = False
         with self.running_lock:
             if not self.running:
@@ -280,7 +283,7 @@ class TimerTask(object):
                 logger.debug('Task shutting down')
         return exit_loop
 
-    def run_threshold_timer(self):
+    def _run_threshold_timer(self):
         """
         Main loop of the timer task
 
